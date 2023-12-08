@@ -1,0 +1,24 @@
+[gd_scene load_steps=2 format=3 uid="uid://dj0dqofj0amh2"]
+
+[sub_resource type="GDScript" id="GDScript_tjhs5"]
+script/source = "extends Node
+
+signal load_finished
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	load_resource()
+	await load_finished
+	var node = load(\"res://src/default_node.tscn\").instantiate()
+	get_tree().get_root().add_child(node)
+	get_tree().change_scene_to_file(\"res://src/main.tscn\")
+	pass # Replace with function body.
+
+func load_resource():
+	await get_tree().create_timer(2).timeout
+	var check = ProjectSettings.load_resource_pack(\"res://pack.pck\")
+	prints(\"Get resource\",check)
+	load_finished.emit()
+"
+
+[node name="Loader" type="Node"]
+script = SubResource("GDScript_tjhs5")
