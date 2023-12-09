@@ -3,22 +3,64 @@
 [sub_resource type="GDScript" id="GDScript_tjhs5"]
 script/source = "extends Node
 
-signal load_finished
+signal load_finished(result:int)
 # Called when the node enters the scene tree for the first time.
-func _ready():
-	load_resource()
-	await load_finished
-	var node = load(\"res://src/default_node.tscn\").instantiate()
-	get_tree().get_root().add_child(node)
-	get_tree().change_scene_to_file(\"res://src/main.tscn\")
-	pass # Replace with function body.
+func download(link, path):
+	prints(\"Download \",link)
+	var http = HTTPRequest.new()
+	add_child(http)
+	http.request_completed.connect(self._http_request_completed)
+	http.set_download_file(path)
+	var request = http.request(link)
+	if request != OK:
+		push_error(\"Http request error\")
+	await http.request_completed
+	remove_child(http)
 
-func load_resource():
-	await get_tree().create_timer(2).timeout
-	var check = ProjectSettings.load_resource_pack(\"res://pack.pck\")
-	prints(\"Get resource\",check)
-	load_finished.emit()
+func _http_request_completed(result, _response_code, _headers, _body):
+	if result != OK:
+		push_error(\"Download Failed\")
+	load_finished.emit(result)
+
+func save(content):
+	var file = FileAccess.open(\"user://save_game.dat\", FileAccess.WRITE)
+	file.store_string(content)
+
+func load(path = \"user://save_game.dat\" ):
+	var file = FileAccess.open(path, FileAccess.READ)
+	if file == null: return null
+	var content:String = file.get_as_text()
+	return content
+
+func _ready():
+	#load new version
+	var version = self.load()
+	var path_pck = \"user://patch.pck\"
+	var new_version = await get_new_version()
+	if version != new_version:
+		prints(\"No Patch\")
+		save(new_version)
+		download(\"https://raw.githubusercontent.com/dao1701/base-game-godot/main/patch.pck\",path_pck)
+		var code = await load_finished
+		var file = FileAccess.open(path_pck,FileAccess.READ)
+		if file == null: 
+			prints(\"No patch error\")
+			get_tree().quit(0)
+	else:
+		prints(\"Up to date\")
+	
+	
+	print(\"OK\")
+	
+func get_new_version():
+	download(\"https://github.com/dao1701/base-game-godot/commit/main.patch\",\"user://patch.dat\")
+	await load_finished
+	var string = self.load(\"user://patch.dat\") as String
+	var version = string.split(\" \")[1]
+	return version
 "
 
 [node name="Loader" type="Node"]
 script = SubResource("GDScript_tjhs5")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="."]

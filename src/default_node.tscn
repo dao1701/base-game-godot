@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://btsqgpxwy5ay5"]
+
+[sub_resource type="GDScript" id="GDScript_cxn4x"]
+script/source = "extends Node
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+"
+
+[node name="DefaultNode" type="Node"]
+script = SubResource("GDScript_cxn4x")
