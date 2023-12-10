@@ -61,8 +61,9 @@ func _ready():
 func get_new_version():
 	download(\"https://github.com/dao1701/base-game-godot/commit/main.patch\",\"user://patch.dat\")
 	await load_finished
-	var string = self.load(\"user://patch.dat\") as String
+	var string = self.load(\"user://patch.dat\")
 	var version = string.split(\" \")[1]
+	prints(\"New \",version)
 	return version
 "
 
