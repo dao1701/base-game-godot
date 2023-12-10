@@ -48,7 +48,9 @@ func _ready():
 			get_tree().quit(0)
 	else:
 		prints(\"Up to date\")
-	
+	var check = ProjectSettings.load_resource_pack(path_pck)			
+	prints(\"Load PCK\",check)
+	get_tree().change_scene_to_file(\"res://src/main.tscn\")
 	
 	print(\"OK\")
 	
